@@ -1,20 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/login_screen.dart';
 import 'constants/theme.dart';
 import 'providers/card_provider.dart';
+import 'services/local_storage_service.dart';
+import 'services/sync_service.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final localStorageService = LocalStorageService();
+  await localStorageService.init();
+  
+  final syncService = SyncService(localStorageService);
+  await syncService.init();
+  
+  runApp(MyApp(
+    localStorageService: localStorageService,
+    syncService: syncService,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final LocalStorageService localStorageService;
+  final SyncService syncService;
+
+  const MyApp({
+    super.key,
+    required this.localStorageService,
+    required this.syncService,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CardProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => CardProvider(
+            localStorageService: localStorageService,
+            syncService: syncService,
+          ),
+        ),
+      ],
       child: MaterialApp(
         title: 'Swift Cards',
         debugShowCheckedModeBanner: false,

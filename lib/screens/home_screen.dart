@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/theme.dart';
-import '../models/card_model.dart';
+import '../models/loyalty_card.dart';
 import '../providers/card_provider.dart';
 import 'add_card_screen.dart';
 import 'card_details_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load cards when the screen is first shown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CardProvider>(context, listen: false).loadCards();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +111,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class CardItem extends StatelessWidget {
-  final CardModel card;
+  final LoyaltyCard card;
 
   const CardItem({super.key, required this.card});
 
@@ -119,9 +133,9 @@ class CardItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (card.logoUrl != null)
+              if (card.logoPath != null)
                 Image.network(
-                  card.logoUrl!,
+                  card.logoPath!,
                   height: 40,
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(
@@ -146,18 +160,16 @@ class CardItem extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                card.brandName,
+                card.cardNumber,
                 style: AppTheme.cardSubtitleStyle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (card.expiryDate != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Expires: ${card.expiryDate!.day}/${card.expiryDate!.month}/${card.expiryDate!.year}',
-                  style: AppTheme.cardExpiryStyle,
-                ),
-              ],
+              const SizedBox(height: 8),
+              Text(
+                'Expires: ${card.expiryDate.day}/${card.expiryDate.month}/${card.expiryDate.year}',
+                style: AppTheme.cardExpiryStyle,
+              ),
             ],
           ),
         ),

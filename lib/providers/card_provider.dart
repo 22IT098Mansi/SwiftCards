@@ -1,40 +1,43 @@
-import 'package:flutter/material.dart';
-import '../models/card_model.dart';
+import 'package:flutter/foundation.dart';
+import '../models/loyalty_card.dart';
+import '../services/local_storage_service.dart';
+import '../services/sync_service.dart';
 
-class CardProvider extends ChangeNotifier {
-  final List<CardModel> _cards = [
-    CardModel(
-      id: '1',
-      name: 'Starbucks Rewards',
-      brandName: 'Starbucks',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Starbucks_Corporation_Logo_2011.svg/1200px-Starbucks_Corporation_Logo_2011.svg.png',
-      expiryDate: DateTime(2025, 12, 31),
-    ),
-    CardModel(
-      id: '2',
-      name: 'Amazon Prime',
-      brandName: 'Amazon',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1200px-Amazon_logo.svg.png',
-      expiryDate: DateTime(2024, 6, 30),
-    ),
-    CardModel(
-      id: '3',
-      name: 'Netflix Premium',
-      brandName: 'Netflix',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/1200px-Netflix_2015_logo.svg.png',
-      expiryDate: DateTime(2024, 3, 15),
-    ),
-  ];
+class CardProvider with ChangeNotifier {
+  final LocalStorageService _localStorage;
+  final SyncService _syncService;
+  List<LoyaltyCard> _cards = [];
 
-  List<CardModel> get cards => _cards;
+  CardProvider({
+    required LocalStorageService localStorageService,
+    required SyncService syncService,
+  })  : _localStorage = localStorageService,
+        _syncService = syncService {
+    loadCards();
+  }
 
-  void addCard(CardModel card) {
-    _cards.add(card);
+  List<LoyaltyCard> get cards => _cards;
+
+  Future<void> loadCards() async {
+    _cards = await _localStorage.getAllCards();
     notifyListeners();
   }
 
-  void removeCard(String id) {
-    _cards.removeWhere((card) => card.id == id);
-    notifyListeners();
+  Future<void> addCard(LoyaltyCard card) async {
+    await _localStorage.saveCard(card);
+    await loadCards();
+    await _syncService.syncWithCloud();
+  }
+
+  Future<void> updateCard(LoyaltyCard card) async {
+    await _localStorage.updateCard(card);
+    await loadCards();
+    await _syncService.syncWithCloud();
+  }
+
+  Future<void> deleteCard(String cardId) async {
+    await _localStorage.deleteCard(cardId);
+    await loadCards();
+    await _syncService.syncWithCloud();
   }
 } 

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import '../constants/theme.dart';
-import '../models/card_model.dart';
+import '../models/loyalty_card.dart';
 
 class CardDetailsScreen extends StatelessWidget {
-  final CardModel card;
+  final LoyaltyCard card;
 
   const CardDetailsScreen({super.key, required this.card});
 
@@ -20,7 +20,7 @@ class CardDetailsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               QrImageView(
-                data: card.barcodeUrl ?? 'CARD${card.id}',
+                data: card.barcodeValue,
                 version: QrVersions.auto,
                 size: 200.0,
                 backgroundColor: Colors.white,
@@ -77,9 +77,9 @@ class CardDetailsScreen extends StatelessWidget {
               decoration: AppTheme.cardDecoration,
               child: Column(
                 children: [
-                  if (card.logoUrl != null)
+                  if (card.logoPath != null)
                     Image.network(
-                      card.logoUrl!,
+                      card.logoPath!,
                       height: 60,
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
@@ -103,7 +103,7 @@ class CardDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    card.brandName,
+                    card.cardNumber,
                     style: AppTheme.subtitleStyle,
                     textAlign: TextAlign.center,
                   ),
@@ -118,7 +118,7 @@ class CardDetailsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   QrImageView(
-                    data: card.barcodeUrl ?? 'CARD${card.id}',
+                    data: card.barcodeValue,
                     version: QrVersions.auto,
                     size: 200.0,
                   ),
@@ -160,17 +160,15 @@ class CardDetailsScreen extends StatelessWidget {
                   _buildDetailRow(
                     context,
                     'Card Number',
-                    '•••• •••• •••• 1234',
+                    card.cardNumber,
                     onTap: () => _copyCardNumber(context),
                   ),
-                  if (card.expiryDate != null) ...[
-                    const SizedBox(height: 12),
-                    _buildDetailRow(
-                      context,
-                      'Expiry Date',
-                      DateFormat('dd/MM/yyyy').format(card.expiryDate!),
-                    ),
-                  ],
+                  const SizedBox(height: 12),
+                  _buildDetailRow(
+                    context,
+                    'Expiry Date',
+                    DateFormat('dd/MM/yyyy').format(card.expiryDate),
+                  ),
                 ],
               ),
             ),

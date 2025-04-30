@@ -1,4 +1,4 @@
-# todo_app
+# SwiftCards
 
 A new Flutter project.
 

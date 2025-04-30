@@ -7,9 +7,6 @@ class LocalStorageService {
   static const String _notificationsBoxName = 'notifications';
 
   Future<void> init() async {
-    await Hive.initFlutter();
-    Hive.registerAdapter(LoyaltyCardAdapter());
-    Hive.registerAdapter(NotificationModelAdapter());
     await Hive.openBox<LoyaltyCard>(_cardsBoxName);
     await Hive.openBox<NotificationModel>(_notificationsBoxName);
   }
